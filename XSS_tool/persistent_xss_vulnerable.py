@@ -46,9 +46,9 @@ def get_tasklist():
     body = '<table border="1">'
     for row in result:
         body += '<tr><td>'
-        body += row[0].encode(encoding="utf-8", errors="strict")
+        body += str(row[0], 'utf-8')
         body += '</td><td>'
-        body += row[1].encode(encoding="utf-8", errors="strict")
+        body += str(row[1], 'utf-8')
         body += '</td><tr>'
 
     body += '</table>'
