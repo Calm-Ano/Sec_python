@@ -7,18 +7,32 @@ from bottle import response
 from bottle import redirect
 from bottle import get
 import os
+import sys
+import secrets
+
 
 USER_ID = 'user1'
 os.environ['PASSWORD'] = '123456'
+token = ''
+
+
+def gen_token():
+    return secrets.token_urlsafe()
 
 
 @route('/')
 def index():
     html = '<h2> CSRF demo </h2>'
     if isloggedin():
+        global token
+        if token == '':
+            token = gen_token()
+        hidden_form = '<input type="hidden" name="token" value="' + token + '">'
+
         user_name = request.get_cookie('sessionid', secret='password')
         html += '<form action="/changepasswd" method="POST">'
         html += 'Change password: <input type="text" name="password" />'
+        html += hidden_form
         html += '<input type="submit" value="update" />'
         html += '</form>'
         return html + 'Hello ' + str(user_name)
@@ -62,6 +76,8 @@ def authenticate(user_id, passwd):
 
 @route('/changepasswd', method='POST')
 def change_passwd():
+    if not validate_token():
+        return 'Your token is invalid'
     if isloggedin():
         new_passwd = request.forms.get('password')
         os.environ['PASSWORD'] = new_passwd
@@ -69,6 +85,10 @@ def change_passwd():
     else:
         html = 'You must login <a href="/login">here.</a>'
         return html
+
+
+def validate_token():
+    return token == request.forms.get('token')
 
 
 run(host='0.0.0.0', port=8000, debug=True)
