@@ -76,6 +76,9 @@ def authenticate(user_id, passwd):
 
 @route('/changepasswd', method='POST')
 def change_passwd():
+    referer = request.headers.get('referer')
+    if referer != 'http://localhost:8000':
+        return 'The value of Referer is invalid'
     if not validate_token():
         return 'Your token is invalid'
     if isloggedin():
